@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <h1>Resume Parser</h1>
+    <nav>
+      <ul>
+        <li><a href="{% url 'upload_resume' %}">Upload Resume</a></li>
+      </ul>
+    </nav>
+    {% block content %}{% endblock %}
+  </body>
+</html>
