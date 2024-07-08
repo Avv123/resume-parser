@@ -1,15 +1,91 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>{% block title %}{% endblock %}</title>
-  </head>
-  <body>
-    <h1>Resume Parser</h1>
-    <nav>
-      <ul>
-        <li><a href="{% url 'upload_resume' %}">Upload Resume</a></li>
-      </ul>
-    </nav>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .upload-area {
+            border: 2px dashed #a0aec0;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #4a5568;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Resume Parser</h1>
+        <form id="resume-form" method="post" enctype="multipart/form-data" action="{% url 'upload_resume' %}">
+            {% csrf_token %}
+            <div class="upload-area mb-6">
+                <label for="resume-upload" class="cursor-pointer">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-gray-600">Click to upload or drag and drop your resume here</p>
+                    <p class="text-sm text-gray-500 mt-2">Supported formats: PDF, DOCX</p>
+                </label>
+                <input id="resume-upload" name="resume" type="file" accept=".pdf,.docx" class="hidden">
+            </div>
+            <button type="submit" id="parse-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                Parse Resume
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const uploadArea = document.querySelector('.upload-area');
+        const fileInput = document.getElementById('resume-upload');
+        const parseButton = document.getElementById('parse-button');
+        const form = document.getElementById('resume-form');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadArea.classList.add('bg-gray-100');
+        }
+
+        function unhighlight() {
+            uploadArea.classList.remove('bg-gray-100');
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+        }
+
+        form.addEventListener('submit', (e) => {
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                alert('Please upload a resume first.');
+            }
+        });
+    </script>
     {% block content %}{% endblock %}
-  </body>
+</body>
 </html>

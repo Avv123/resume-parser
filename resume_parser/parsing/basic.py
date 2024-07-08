@@ -6,6 +6,10 @@ from .parse import extract_text
 # extracted_text = "I am a software engineer with experience in Python and Java programming. I have developed web applications using Django and Flask frameworks."
 
 # Structured section prompts
+import re
+import ollama
+
+# Structured section prompts
 STRUCTURED_SECTION_PROMPTS = {
     "contact_section": """Parse the resume below in HR-JSON 1.0.4 and return only contact information in the following structure:
     {{"contact": {{"first_name":"","last_name":"","city_name":"","state_name":"","country_name":"","zip_code":""}}}}
@@ -15,7 +19,6 @@ STRUCTURED_SECTION_PROMPTS = {
     {{"summary": ""}}. If summary is not present in Resume return "N/A".
     Resume: {}""",
     
-
     "education_section": """Parse the resume below in HR-JSON 1.0.4 and return only education in the following structure:
     {{"education": [{{"school_name":"","school_location":"","degree":"","field_of_study":"","graduation_date":""}}]}}
     Resume: {}""",
@@ -33,7 +36,6 @@ STRUCTURED_SECTION_PROMPTS = {
     Resume: {}"""
 }
 
-# Function to call the ollama chat API with a specific prompt
 def get_response(extract_text, structured_prompt):
     prompt = structured_prompt.format(extract_text)
     messages = [
@@ -41,18 +43,46 @@ def get_response(extract_text, structured_prompt):
     ]
     return ollama.chat(model='llama3', messages=messages)
 
-# Dictionary to store responses
+def extract__from_response(response_content):
+    """Extracts JSON part from the response content string."""
+    try:
+        _match = re.search(r'\{.*\}', response_content, re.DOTALL)
+        if _match:
+            return _match.group(0)
+        else:
+            print("No JSON object found in response content.")
+            return None
+    except re.error as e:
+        print(f"Regex error: {e}")
+        return None
+import json
 def process_resume_text(extract_text):
-    # Dictionary to store parsed data
     parsed_data = {}
 
-                                        
-    # Call the API for each section
     for section, prompt in STRUCTURED_SECTION_PROMPTS.items():
         response = get_response(extract_text, prompt)
-        parsed_data[section] = response.get('message', {}).get('content', '').strip()
+        if response:
+            try:
+                response_content = response.get('message', {}).get('content', '').strip()
+                print(f"Raw response for {section}: {response_content}")  # Debugging line
+                _content = extract__from_response(response_content)
+                if _content:
+                    parsed_content = json.loads(_content)
+                    if isinstance(parsed_content, dict):
+                        parsed_data[section] = parsed_content
+                    else:
+                        print(f"Unexpected format in response for {section}")
+                        parsed_data[section] = {}
+                else:
+                    print(f"No JSON content found in response for {section}")
+                    parsed_data[section] = {}
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON response for {section}: {e}")
+                parsed_data[section] = {}
+        else:
+            parsed_data[section] = {}
 
-    # Print the parsed data to the terminal
     for section, content in parsed_data.items():
         print(f"{section.replace('_', ' ').title()}:\n{content}\n")
 
+    return parsed_data

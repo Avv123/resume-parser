@@ -1,6 +1,163 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parsing Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            color: #000080;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tab-container {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tabs {
+            display: flex;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: none;
+            outline: none;
+            transition: 0.3s;
+            font-weight: bold;
+            color: #555;
+            text-align: center;
+        }
+        .tab:hover {
+            background-color: #e0e0e0;
+        }
+        .tab.active {
+            background-color: #4169e1;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        h2 {
+            color: #4169e1;
+            margin-top: 0;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .info-item {
+            margin-bottom: 15px;
+        }
+        .info-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Parsing Results</h1>
+    
+    <div class="tab-container">
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'contact-info')">Contact Info</button>
+            <button class="tab" onclick="openTab(event, 'summary')">Summary</button>
+            <button class="tab" onclick="openTab(event, 'education')">Education</button>
+            <button class="tab" onclick="openTab(event, 'experience')">Experience</button>
+            <button class="tab" onclick="openTab(event, 'skills')">Skills</button>
+            <button class="tab" onclick="openTab(event, 'achievements')">Achievements</button>
+        </div>
 
-{% block content %}
-  <h1>Extracted Text</h1>
-  <p>{{ text }}</p>
-{% endblock %}
+        <div id="contact-info" class="tab-content active">
+            <h2>Contact Information</h2>
+            <div class="info-item"><span class="info-label">First Name:</span>{{ parsed_data.first_name }}</div>
+            <div class="info-item"><span class="info-label">Last Name:</span>{{ parsed_data.last_name }}</div>
+            <div class="info-item"><span class="info-label">City:</span>{{ parsed_data.city_name }}</div>
+            <div class="info-item"><span class="info-label">State:</span>{{ parsed_data.state_name }}</div>
+            <div class="info-item"><span class="info-label">Country:</span>{{ parsed_data.country_name }}</div>
+            <div class="info-item"><span class="info-label">Zip Code:</span>{{ parsed_data.zip_code }}</div>
+        </div>
+
+        <div id="summary" class="tab-content">
+            <h2>Summary</h2>
+            <p>{{ parsed_data.summary }}</p>
+        </div>
+
+        <div id="education" class="tab-content">
+            <h2>Education</h2>
+            <ul>
+            {% for edu in parsed_data.education %}
+                <li>{{ edu }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <div id="experience" class="tab-content">
+            <h2>Work Experience</h2>
+            <ul>
+            {% for exp in parsed_data.experience %}
+                <li>{{ exp }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <div id="skills" class="tab-content">
+            <h2>Skills</h2>
+            <ul>
+            {% if parsed_data.skills != 'N/A' %}
+                {% for skill in parsed_data.skills %}
+                    <li>{{ skill.name }} - {{ skill.category }}</li>
+                {% endfor %}
+            {% else %}
+                <li>N/A</li>
+            {% endif %}
+            </ul>
+        </div>
+
+        <div id="achievements" class="tab-content">
+            <h2>Achievements</h2>
+            <div class="info-item"><span class="info-label">Accomplishments:</span>{{ parsed_data.accomplishments }}</div>
+            <div class="info-item"><span class="info-label">Affiliations:</span>{{ parsed_data.affiliations }}</div>
+            <div class="info-item"><span class="info-label">Websites:</span>{{ parsed_data.websites }}</div>
+            <div class="info-item"><span class="info-label">Certifications:</span>{{ parsed_data.certifications }}</div>
+            <div class="info-item"><span class="info-label">Languages:</span>{{ parsed_data.languages }}</div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabContent, tabLinks;
+            tabContent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabContent.length; i++) {
+                tabContent[i].style.display = "none";
+            }
+            tabLinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].className = tabLinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>

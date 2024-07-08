@@ -1,14 +1,9 @@
-import PyPDF2
-
+import fitz  # PyMuPDF
 
 def extract_text(resume_file):
-    # Read the uploaded resume file
-    pdf_reader = PyPDF2.PdfReader(resume_file)
-    
-    # Extract text from each page in the PDF
     text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-    
-    # Return the extracted text
+    with fitz.open(stream=resume_file.read(), filetype="pdf") as pdf_document:
+        for page_num in range(len(pdf_document)):
+            page = pdf_document[page_num]
+            text += page.get_text()
     return text
